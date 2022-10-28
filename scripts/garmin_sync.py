@@ -218,6 +218,7 @@ class Garmin:
         await self.req.aclose()
 
     async def upload_activities_original(self, datas):
+        print("start upload activities to garmin!!!")
         if not self.is_login:
             self.login()
         for data in datas:

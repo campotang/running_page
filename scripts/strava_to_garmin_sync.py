@@ -93,6 +93,8 @@ async def upload_to_activities(garmin_client, strava_client, strava_web_client, 
         print(after_datetime)
         filters = {"after": after_datetime}
     strava_activities = list(strava_client.get_activities(**filters))
+    print("start print strava activities!!!!")
+    print(strava_activities)
     # strava rate limit
     for i in strava_activities[:50]:
         print(i.id)
