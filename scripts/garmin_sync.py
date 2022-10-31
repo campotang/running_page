@@ -223,6 +223,7 @@ class Garmin:
             self.login()
         for data in datas:
             print(data.filename)
+            print("garmin upload data:", data)
             with open(data.filename, "wb") as f:
                 for chunk in data.content:
                     f.write(chunk)
