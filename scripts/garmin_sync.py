@@ -239,6 +239,7 @@ class Garmin:
                 # just pass for now
                 continue
             try:
+                print("garmin upload result:", res)
                 resp = res.json()["detailedImportResult"]
                 print(resp)
             except Exception as e:
