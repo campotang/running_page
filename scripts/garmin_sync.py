@@ -223,7 +223,6 @@ class Garmin:
             self.login()
         for data in datas:
             print(data.filename)
-            print("garmin upload data:", data)
             with open(data.filename, "wb") as f:
                 for chunk in data.content:
                     f.write(chunk)
@@ -240,12 +239,10 @@ class Garmin:
                 # just pass for now
                 continue
             try:
-                print("garmin upload result:", res)
                 resp = res.json()["detailedImportResult"]
-                print(resp)
+                print("garmin upload success: ", resp)
             except Exception as e:
-                print(e)
-                raise Exception("failed to upload")
+                print("garmin upload failed: ", e)
         await self.req.aclose()
 
 

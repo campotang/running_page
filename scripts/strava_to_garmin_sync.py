@@ -1,19 +1,16 @@
 import argparse
 import asyncio
-import time
 from datetime import datetime, timedelta, timezone
-from io import BytesIO
 from xml.etree import ElementTree
 
 import gpxpy
 import gpxpy.gpx
-from config import STRAVA_GARMIN_TYPE_DICT
+import pytz
+from stravaweblib import WebClient, DataFormat
+
 from garmin_sync import Garmin
 from strava_sync import run_strava_sync
-
 from utils import make_strava_client
-from stravaweblib import WebClient, DataFormat
-import pytz
 
 
 def generate_strava_run_points(start_time, strava_streams):
@@ -95,12 +92,15 @@ async def upload_to_activities(garmin_client, strava_client, strava_web_client, 
         print(after_datetime)
         filters = {"after": after_datetime}
     strava_activities = list(strava_client.get_activities(**filters))
-    print("strava activities length: ", len(strava_activities))
+    print("strava activities size: ", len(strava_activities))
     # strava rate limit
     for i in strava_activities[:50]:
-        print(i.id)
-        data = strava_web_client.get_activity_data(i.id, fmt=format)
-        files_list.append(data)
+        try:
+            print(i.id)
+            data = strava_web_client.get_activity_data(i.id, fmt=format)
+            files_list.append(data)
+        except Exception as ex:
+            print(ex)
     await garmin_client.upload_activities_original(files_list)
     return files_list
 
@@ -142,7 +142,7 @@ if __name__ == "__main__":
         loop = asyncio.get_event_loop()
         future = asyncio.ensure_future(
             upload_to_activities(
-                garmin_client, strava_client, strava_web_client, DataFormat.GPX
+                garmin_client, strava_client, strava_web_client, DataFormat.ORIGINAL
             )
         )
         loop.run_until_complete(future)
