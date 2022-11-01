@@ -99,7 +99,6 @@ async def upload_to_activities(garmin_client, strava_client, strava_web_client, 
     # strava rate limit
     for i in strava_activities[:50]:
         print(i.id)
-        time.sleep(3)
         data = strava_web_client.get_activity_data(i.id, fmt=format)
         files_list.append(data)
     await garmin_client.upload_activities_original(files_list)
