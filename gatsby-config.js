@@ -2,17 +2,17 @@ module.exports = {
   pathPrefix: '/running_page', // Change to `/running_page` when running on github pages
   siteMetadata: {
     siteTitle: 'Running page',
-    siteUrl: 'https://running.leeyom.top',
-    logo: 'https://avatars.githubusercontent.com/u/22115219?v=4',
+    siteUrl: 'https://running-page-azure-two.vercel.app',
+    logo: 'http://image.leeyom.top/img/20221103103717.png',
     description: 'Personal site and blog',
     navLinks: [
       {
         name: 'Blog',
-        url: 'https://blog.leeyom.top',
+        url: 'https://running-page-azure-two.vercel.app',
       },
       {
         name: 'About',
-        url: 'https://github.com/superleeyom',
+        url: 'https://running-page-azure-two.vercel.app',
       },
     ],
   },
