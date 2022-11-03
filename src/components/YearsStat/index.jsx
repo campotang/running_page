@@ -19,7 +19,7 @@ const YearsStat = ({ year, onClick }) => {
           {INFO_MESSAGE(years.length, year)}
           <br />
           <br />
-          "明明这么痛苦，这么难过，为什么就是不能放弃跑步？因为全身细胞都在蠢蠢欲动，想要感受强风迎面吹拂的滋味。"
+          "我跑过了一些地方，希望随着时间的推移，地图点亮的地方越来越多，不要停下来，不要停下奔跑的脚步"
           <br />
           <p style={quoteStyle}>&ndash;&ndash;《强风吹拂》</p>
         </p>
