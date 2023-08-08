@@ -21,7 +21,6 @@ const YearsStat = ({ year, onClick }) => {
           <br />
           "我跑过了一些地方，希望随着时间的推移，地图点亮的地方越来越多，不要停下来，不要停下奔跑的脚步"
           <br />
-          <p style={quoteStyle}>&ndash;&ndash;不知道谁说的</p>
         </p>
       </section>
       <hr color="red" />
