@@ -1,4 +1,5 @@
 import argparse
+from base64 import b64decode
 import json
 import logging
 import os.path
@@ -11,21 +12,27 @@ import gpxpy.gpx
 import httpx
 from config import (
     BASE_TIMEZONE,
-    BASE_URL,
     GPX_FOLDER,
     JSON_FILE,
-    NIKE_CLIENT_ID,
     OUTPUT_DIR,
     SQL_FILE,
-    TOKEN_REFRESH_URL,
     run_map,
 )
 from generator import Generator
-
 from utils import adjust_time, make_activities_file
 
 # logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("nike_sync")
+
+BASE_URL = "https://api.nike.com/sport/v3/me"
+TOKEN_REFRESH_URL = "https://api.nike.com/idn/shim/oauth/2.0/token"
+NIKE_CLIENT_ID = "VmhBZWFmRUdKNkc4ZTlEeFJVejhpRTUwQ1o5TWlKTUc="
+NIKE_UX_ID = "Y29tLm5pa2Uuc3BvcnQucnVubmluZy5pb3MuNS4xNQ=="
+NIKE_HEADERS = {
+    "Host": "api.nike.com",
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+}
 
 
 class Nike:
@@ -34,10 +41,12 @@ class Nike:
 
         response = self.client.post(
             TOKEN_REFRESH_URL,
+            headers=NIKE_HEADERS,
             json={
                 "refresh_token": refresh_token,
-                "client_id": NIKE_CLIENT_ID,
+                "client_id": b64decode(NIKE_CLIENT_ID).decode(),
                 "grant_type": "refresh_token",
+                "ux_id": b64decode(NIKE_UX_ID).decode(),
             },
             timeout=60,
         )
@@ -76,16 +85,20 @@ class Nike:
 def run(refresh_token):
     nike = Nike(refresh_token)
     last_id = get_last_id()
-    print(f"Running from ID {last_id}")
+
+    logger.info(f"Running from ID {last_id}")
 
     while True:
         if last_id is not None:
             data = nike.get_activities_since_id(last_id)
         else:
             data = nike.get_activities_since_timestamp(0)
+
         last_id = data["paging"].get("after_id")
         activities = data["activities"]
-        # print(f"pull NRC activities: {activities}")
+
+        logger.info(f"Found {len(activities)} new activities")
+
         for activity in activities:
             # ignore NTC record
             app_id = activity["app_id"]
@@ -93,16 +106,15 @@ def run(refresh_token):
             if (
                 app_id == "com.nike.ntc.brand.ios"
                 or app_id == "com.nike.ntc.brand.droid"
-                or app_id == "com.nike.brand.ios.ntc"
             ):
-                print(f"Ignore NTC record {activity_id}")
+                logger.info(f"Ignore NTC record {activity_id}")
                 continue
 
             full_activity = nike.get_activity(activity_id)
             save_activity(full_activity)
 
         if last_id is None or not activities:
-            print(f"Found no new activities, finishing")
+            logger.info(f"Found no new activities, finishing")
             return
 
 
@@ -110,11 +122,10 @@ def save_activity(activity):
     activity_id = activity["id"]
     activity_time = activity["end_epoch_ms"]
     print(activity_time)
-    print(f"Saving activity {activity_id}")
+    logger.info(f"Saving activity {activity_id}")
     path = os.path.join(OUTPUT_DIR, f"{activity_time}.json")
     try:
         with open(path, "w") as f:
-            print(f"debug activity path: {path}")
             json.dump(sanitise_json(activity), f, indent=4)
     except Exception:
         os.unlink(path)
@@ -129,7 +140,7 @@ def get_last_id():
         file_name = file_names[-1]
         with open(os.path.join(OUTPUT_DIR, file_name)) as f:
             data = json.load(f)
-        print(f"Last update from {data['id']}")
+        logger.info(f"Last update from {data['id']}")
         return data["id"]
     # easy solution when error happens no last id
     except:
@@ -172,7 +183,7 @@ def get_to_generate_files():
             if t > 0 and t < 7226553600000:
                 timestamps.append(t)
             else:
-                print(f"Invalid timestamp: {t}")
+                logger.info(f"Invalid timestamp: {t}")
 
         if len(timestamps) > 0:
             last_time = max(timestamps)
